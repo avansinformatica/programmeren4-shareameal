@@ -6,8 +6,8 @@ const server = require('../../index');
 chai.should();
 chai.use(chaiHttp);
 
-describe('Server-info', function () {
-  it('TC-102 - Server info should return succesful information', (done) => {
+describe('UC-102 Informatie opvragen', function () {
+  it('TC-102-1 - Server info should return succesful information', (done) => {
     chai
       .request(server)
       .get('/api/info')
@@ -24,7 +24,7 @@ describe('Server-info', function () {
       });
   });
 
-  it('TC-103 - Server should return valid error when endpoint does not exist', (done) => {
+  it('TC-102-2 - Server should return valid error when endpoint does not exist', (done) => {
     chai
       .request(server)
       .get('/api/doesnotexist')

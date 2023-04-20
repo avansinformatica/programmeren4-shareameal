@@ -65,7 +65,9 @@ app.post('/api/register', (req, res) => {
 
   res.status(200).json({
     status: 200,
-    message: 'User info-endpoint',
+    message: 'User successfully registered',
+    // Wat je hier retourneert is een keuze; misschien wordt daar in het
+    // ontwerpdocument iets over gezegd.
     data: user
   });
 });
@@ -73,13 +75,16 @@ app.post('/api/register', (req, res) => {
 // UC-202 Opvragen van overzicht van users
 app.get('/api/user', (req, res) => {
   // er moet precies 1 response verstuurd worden.
-  res.status(200).json({
-    status: 200,
-    message: 'User info-endpoint',
+  const statusCode = 200;
+  res.status(statusCode).json({
+    status: statusCode,
+    message: 'User getAll endpoint',
     data: database.users
   });
 });
 
+// Wanneer geen enkele endpoint matcht kom je hier terecht. Dit is dus
+// een soort 'afvoerputje' (sink) voor niet-bestaande URLs in de server.
 app.use('*', (req, res) => {
   res.status(404).json({
     status: 404,
@@ -88,8 +93,10 @@ app.use('*', (req, res) => {
   });
 });
 
+// Start de server
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
+// Export de server zodat die in de tests beschikbaar is.
 module.exports = app;
