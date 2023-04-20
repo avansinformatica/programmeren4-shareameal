@@ -1,4 +1,5 @@
 const express = require('express');
+const assert = require('assert');
 
 const app = express();
 const port = 3000;
@@ -12,15 +13,17 @@ let database = {
   users: [
     {
       id: 0,
-      firstname: 'Hendrik',
-      lastname: 'van Dam',
-      email: 'hvd@server.nl'
+      firstName: 'Hendrik',
+      lastName: 'van Dam',
+      emailAdress: 'hvd@server.nl'
+      // Hier de overige velden uit het functioneel ontwerp
     },
     {
       id: 1,
-      firstname: 'Marieke',
-      lastname: 'Jansen',
-      email: 'm@server.nl'
+      firstName: 'Marieke',
+      lastName: 'Jansen',
+      emailAdress: 'm@server.nl'
+      // Hier de overige velden uit het functioneel ontwerp
     }
   ]
 };
@@ -57,15 +60,36 @@ app.post('/api/register', (req, res) => {
   const user = req.body;
   console.log('user = ', user);
 
+  // Hier zie je hoe je binnenkomende user info kunt valideren.
+  try {
+    // assert(user === {}, 'Userinfo is missing');
+    assert(typeof user.firstName === 'string', 'firstName must be a string');
+    assert(
+      typeof user.emailAdress === 'string',
+      'emailAddress must be a string'
+    );
+  } catch (err) {
+    // Als één van de asserts failt sturen we een error response.
+    res.status(400).json({
+      status: 400,
+      message: err.message.toString(),
+      data: {}
+    });
+    // Nodejs is asynchroon. We willen niet dat de applicatie verder gaat
+    // wanneer er al een response is teruggestuurd.
+    return;
+  }
+
   // Zorg dat de id van de nieuwe user toegevoegd wordt
   // en hoog deze op voor de volgende insert.
   user.id = index++;
   // User toevoegen aan database
   database['users'].push(user);
 
+  // Stuur het response terug
   res.status(200).json({
     status: 200,
-    message: 'User successfully registered',
+    message: `User met id ${user.id} is toegevoegd`,
     // Wat je hier retourneert is een keuze; misschien wordt daar in het
     // ontwerpdocument iets over gezegd.
     data: user

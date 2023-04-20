@@ -19,10 +19,9 @@ describe('UC-201 Registreren als nieuwe user', () => {
   it('TC-201-5 - User succesvol geregistreerd', (done) => {
     // nieuwe user waarmee we testen
     const newUser = {
-      id: 0,
-      firstname: 'Hendrik',
-      lastname: 'van Dam',
-      email: 'hvd@server.nl'
+      firstName: 'Hendrik',
+      lastName: 'van Dam',
+      emailAdress: 'hvd@server.nl'
     };
 
     // Voer de test uit
@@ -37,7 +36,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
         let { data, message, status } = res.body;
 
         status.should.equal(200);
-        message.should.be.a('string').equal('User successfully registered');
+        message.should.be.a('string').that.contains('toegevoegd');
         data.should.be.an('object');
 
         // OPDRACHT!
@@ -46,7 +45,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
         data.should.include({ id: 2 });
         data.should.not.include({ id: 0 });
         data.id.should.equal(2);
-        data.firstname.should.equal('Hendrik');
+        data.firstName.should.equal('Hendrik');
 
         done();
       });
@@ -58,8 +57,7 @@ describe('UC-202 Opvragen van overzicht van users', () => {
     // Voer de test uit
     chai
       .request(server)
-      .post('/api/register')
-      .send(newUser)
+      .get('/api/user')
       .end((err, res) => {
         assert(err === null);
 
@@ -67,27 +65,27 @@ describe('UC-202 Opvragen van overzicht van users', () => {
         let { data, message, status } = res.body;
 
         status.should.equal(200);
-        message.should.be.a('string').equal('User successfully registered');
-        data.should.be.an('object');
+        message.should.be.a('string').equal('User getAll endpoint');
 
-        // OPDRACHT!
-        // Bekijk zelf de API reference op https://www.chaijs.com/api/bdd/
-        // Daar zie je welke chained functions je nog meer kunt gebruiken.
-        data.should.include({ id: 2 });
-        data.should.not.include({ id: 0 });
-        data.id.should.equal(2);
-        data.firstname.should.equal('Hendrik');
+        // Je kunt hier nog testen dat er werkelijk 2 userobjecten in het array zitten.
+        // Maarrr: omdat we in een eerder test een user hebben toegevoegd, bevat
+        // de database nu 3 users...
+        // We komen hier nog op terug.
+        data.should.be.an('array').that.has.length(3);
 
         done();
       });
   });
 
-  it('TC-202-2 - Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
+  // Je kunt een test ook tijdelijk skippen om je te focussen op andere testcases.
+  // Dan gebruik je it.skip
+  it.skip('TC-202-2 - Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {
     // Voer de test uit
     chai
       .request(server)
-      .post('/api/register')
-      .send(newUser)
+      .get('/api/user')
+      .query({ name: 'foo', city: 'non-existent' })
+      // Is gelijk aan .get('/api/user?name=foo&city=non-existent')
       .end((err, res) => {
         assert(err === null);
 
@@ -95,16 +93,8 @@ describe('UC-202 Opvragen van overzicht van users', () => {
         let { data, message, status } = res.body;
 
         status.should.equal(200);
-        message.should.be.a('string').equal('User successfully registered');
-        data.should.be.an('object');
-
-        // OPDRACHT!
-        // Bekijk zelf de API reference op https://www.chaijs.com/api/bdd/
-        // Daar zie je welke chained functions je nog meer kunt gebruiken.
-        data.should.include({ id: 2 });
-        data.should.not.include({ id: 0 });
-        data.id.should.equal(2);
-        data.firstname.should.equal('Hendrik');
+        message.should.be.a('string').equal('User getAll endpoint');
+        data.should.be.an('array');
 
         done();
       });
