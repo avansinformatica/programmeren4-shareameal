@@ -30,7 +30,10 @@ describe('UC-201 Registreren als nieuwe user', () => {
       .post('/api/register')
       .send(newUser)
       .end((err, res) => {
+        // Valideer dat er geen errors waren. Kan met assert()
         assert(err === null);
+        // of met chai.expect(), is meer BDD.
+        chai.expect(err).to.be.null;
 
         res.body.should.be.an('object');
         let { data, message, status } = res.body;
