@@ -2,6 +2,7 @@ const assert = require('assert');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../../index');
+require('tracer').setLevel('error');
 
 chai.should();
 chai.use(chaiHttp);

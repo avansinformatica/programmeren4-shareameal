@@ -1,5 +1,6 @@
 const express = require('express');
 const assert = require('assert');
+const logger = require('./src/util/utils').logger;
 
 const app = express();
 const port = 3000;
@@ -36,12 +37,13 @@ let index = database.users.length;
 // een message, en ga naar de next URL (indien die matcht)!
 app.use('*', (req, res, next) => {
   const method = req.method;
-  console.log(`Methode ${method} is aangeroepen`);
+  logger.trace(`Methode ${method} is aangeroepen`);
   next();
 });
 
 // Info endpoints
 app.get('/api/info', (req, res) => {
+  logger.info('Get server information');
   res.status(201).json({
     status: 201,
     message: 'Server info-endpoint',
@@ -55,10 +57,12 @@ app.get('/api/info', (req, res) => {
 
 // UC-201 Registreren als nieuwe user
 app.post('/api/register', (req, res) => {
+  logger.info('Register user');
+
   // De usergegevens zijn meegestuurd in de request body.
   // In de komende lessen gaan we testen of dat werkelijk zo is.
   const user = req.body;
-  console.log('user = ', user);
+  logger.debug('user = ', user);
 
   // Hier zie je hoe je binnenkomende user info kunt valideren.
   try {
@@ -69,6 +73,7 @@ app.post('/api/register', (req, res) => {
       'emailAddress must be a string'
     );
   } catch (err) {
+    logger.warn(err.message.toString());
     // Als één van de asserts failt sturen we een error response.
     res.status(400).json({
       status: 400,
@@ -85,6 +90,7 @@ app.post('/api/register', (req, res) => {
   user.id = index++;
   // User toevoegen aan database
   database['users'].push(user);
+  logger.info('New user added to database');
 
   // Stuur het response terug
   res.status(200).json({
@@ -98,6 +104,7 @@ app.post('/api/register', (req, res) => {
 
 // UC-202 Opvragen van overzicht van users
 app.get('/api/user', (req, res) => {
+  logger.info('Get all users');
   // er moet precies 1 response verstuurd worden.
   const statusCode = 200;
   res.status(statusCode).json({
@@ -110,6 +117,7 @@ app.get('/api/user', (req, res) => {
 // Wanneer geen enkele endpoint matcht kom je hier terecht. Dit is dus
 // een soort 'afvoerputje' (sink) voor niet-bestaande URLs in de server.
 app.use('*', (req, res) => {
+  logger.warn('Invalid endpoint called: ', req.path);
   res.status(404).json({
     status: 404,
     message: 'Endpoint not found',
@@ -119,7 +127,7 @@ app.use('*', (req, res) => {
 
 // Start de server
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  logger.info(`Example app listening on port ${port}`);
 });
 
 // Export de server zodat die in de tests beschikbaar is.
