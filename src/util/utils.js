@@ -1,6 +1,6 @@
 module.exports = {
   logger: require('tracer').console({
-    level: 'info',
+    level: process.env.LOGLEVEL || 'info',
     format: '{{timestamp}} <{{title}}> {{message}} (in {{file}}:{{line}})',
     dateformat: 'HH:MM:ss.L',
     preprocess: function (data) {

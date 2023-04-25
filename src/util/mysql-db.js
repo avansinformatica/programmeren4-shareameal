@@ -3,10 +3,12 @@ const mysql = require('mysql2');
 
 // Create the connection pool. The pool-specific settings are the defaults
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  database: 'shareameal',
-  port: 3306,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  database: process.env.DB_DATABASE || 'shareameal',
+  port: process.env.DB_PORT || 3306,
+  password: process.env.DB_PASSWORD || '',
+  multipleStatements: true,
   waitForConnections: true,
   connectionLimit: 10,
   maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
