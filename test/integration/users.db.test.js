@@ -1,6 +1,6 @@
 process.env.DB_DATABASE =
   process.env.DB_DATABASE || 'shareameal-testdb' || 'shareameal';
-process.env.LOGLEVEL = 'warn';
+require('tracer').setLevel('debug');
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -100,7 +100,7 @@ describe('Users API', () => {
         });
     });
 
-    it('TC-201-2 should return a valid error when postal code is invalid', (done) => {
+    it('TC-201-2 [naam van de test verder zelf aanvullen]', (done) => {
       // Zelf verder aanvullen
       done();
     });

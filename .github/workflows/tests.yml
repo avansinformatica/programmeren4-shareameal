@@ -1,10 +1,10 @@
 name: Run the integration tests
 
 on:
-  push:
-    branches:
-      - main
-      - les-3
+  # push:
+  #   branches:
+  #     - main
+  #     - les-3
 
 jobs:
   integrationtests:
