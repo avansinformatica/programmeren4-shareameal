@@ -45,6 +45,16 @@ app.use('*', (req, res) => {
   });
 });
 
+// Express error handler
+app.use((err, req, res, next) => {
+  logger.error(err.code, err.message);
+  res.status(err.code).json({
+    statusCode: err.code,
+    message: err.message,
+    data: {}
+  });
+});
+
 // Start de server
 app.listen(port, () => {
   logger.info(`Example app listening on port ${port}`);
