@@ -67,7 +67,7 @@ jobs:
 
       - name: 'Current token'
         run: |
-          echo "secrets.RAILWAY_TOKEN:" # ${{ secrets.RAILWAY_TOKEN }}"
+          echo "secrets.RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}"
 
       - name: Install Railway
         run: npm i -g @railway/cli
@@ -75,4 +75,4 @@ jobs:
       - name: Deploy server to Railway
         run: railway up
         env:
-          RAILWAY_TOKEN: 59c26a29-b2b1-4c89-a288-85747f466efb
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
