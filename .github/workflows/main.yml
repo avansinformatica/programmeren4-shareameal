@@ -30,7 +30,7 @@ jobs:
           mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"
           mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE ${{env.DB_DATABASE}};"
 
-      - name: Import the database
+      - name: Import database script
         run: |
           mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} < share-a-meal.sql
           mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} -e "SHOW TABLES;"
@@ -43,15 +43,37 @@ jobs:
         run: |
           npm test -- --DB_PASSWORD $MYSQL_ROOT_PASSWORD --DB_USER root --DB_NAME $DB_DATABASE
 
-#   deploy:
-#     needs: integrationtests
-#     runs-on: ubuntu-latest
-#     environment:
-#       name: Heroku # naam van mijn environment op GitHub
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: akhileshns/heroku-deploy@v3.12.12
-#         with:
-#           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-#           heroku_app_name: shareameal-prog4
-#           heroku_email: ${{secrets.HEROKU_USER_EMAIL}}
+  #   deploy:
+  #     needs: integrationtests
+  #     runs-on: ubuntu-latest
+  #     environment:
+  #       name: Heroku # naam van mijn environment op GitHub
+  #     steps:
+  #       - uses: actions/checkout@v2
+  #       - uses: akhileshns/heroku-deploy@v3.12.12
+  #         with:
+  #           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+  #           heroku_app_name: shareameal-prog4
+  #           heroku_email: ${{secrets.HEROKU_USER_EMAIL}}
+
+  Railway deploy:
+    needs: integrationtests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: 'Create env file'
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Run satellite-tracker-api unit, integration and e2e tests
+        run: npx nx run satellite-tracker-api:test
+
+      - name: Install Railway
+        run: npm i -g @railway/cli
+
+      - name: Deploy server to Railway
+        run: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
