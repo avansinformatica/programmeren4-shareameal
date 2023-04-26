@@ -65,16 +65,14 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v3
 
-      # - name: 'Create env file'
-      #   run: |
-      #     echo "${{ secrets.ENV_FILE }}" > .env
+      - name: 'Current token'
+        run: |
+          echo "secrets.RAILWAY_TOKEN:" # ${{ secrets.RAILWAY_TOKEN }}"
 
       - name: Install Railway
         run: npm i -g @railway/cli
 
       - name: Deploy server to Railway
-        run: |
-          echo ${{ secrets.RAILWAY_TOKEN }}
-          railway up
+        run: railway up
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: 121e9179-cf85-49f7-8782-2c1604db4958
