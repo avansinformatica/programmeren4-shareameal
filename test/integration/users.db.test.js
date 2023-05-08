@@ -60,7 +60,10 @@ describe('Users API', () => {
       logger.debug('beforeEach called');
       // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
       dbconnection.getConnection(function (err, connection) {
-        if (err) throw err; // not connected!
+        if (err) {
+          done(err);
+          throw err; // not connected!
+        }
         // Use the connection
         connection.query(
           CLEAR_DB + INSERT_USER,
@@ -114,14 +117,20 @@ describe('Users API', () => {
       logger.debug('beforeEach called');
       // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
       dbconnection.getConnection(function (err, connection) {
-        if (err) throw err; // not connected!
+        if (err) {
+          done(err);
+          throw err; // not connected!
+        }
         connection.query(
           CLEAR_DB + INSERT_USER + INSERT_MEALS,
           function (error, results, fields) {
             // When done with the connection, release it.
             dbconnection.releaseConnection(connection);
             // Handle error after the release.
-            if (error) throw error;
+            if (err) {
+              done(err);
+              throw err;
+            }
             // Let op dat je done() pas aanroept als de query callback eindigt!
             logger.debug('beforeEach done');
             done();
