@@ -62,14 +62,16 @@ describe('Users API', () => {
       dbconnection.getConnection(function (err, connection) {
         if (err) {
           done(err);
-          throw err; // not connected!
+          throw err; // no connection
         }
         // Use the connection
         connection.query(
           CLEAR_DB + INSERT_USER,
           function (error, results, fields) {
-            // Handle error after the release.
-            if (error) throw error;
+            if (error) {
+              done(error);
+              throw error; // not connected!
+            }
             // Let op dat je done() pas aanroept als de query callback eindigt!
             logger.debug('beforeEach done');
             // When done with the connection, release it.
