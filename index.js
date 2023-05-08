@@ -1,5 +1,4 @@
 const express = require('express');
-const assert = require('assert');
 const logger = require('./src/util/utils').logger;
 const userRoutes = require('./src/routes/user.routes');
 
@@ -57,7 +56,7 @@ app.use((err, req, res, next) => {
 
 // Start de server
 app.listen(port, () => {
-  logger.info(`Example app listening on port ${port}`);
+  logger.info(`Share-a-Meal server listening on port ${port}`);
 });
 
 // Export de server zodat die in de tests beschikbaar is.
