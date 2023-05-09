@@ -17,7 +17,9 @@ const pool = mysql.createPool({
 });
 
 pool.on('connection', function (connection) {
-  logger.debug(`Connected to database '${connection.config.database}'`);
+  logger.debug(
+    `Connected to db '${connection.config.database}' on ${connection.config.host}`
+  );
 });
 
 pool.on('acquire', function (connection) {

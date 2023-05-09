@@ -17,6 +17,9 @@ chai.use(chaiHttp);
 
 /**
  * Db queries to clear and fill the test database before each test.
+ *
+ * LET OP: om via de mysql2 package meerdere queries in één keer uit te kunnen voeren,
+ * moet je de optie 'multipleStatements: true' in de database config hebben staan.
  */
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
 const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;';
@@ -54,7 +57,7 @@ describe('Users API', () => {
     done();
   });
 
-  describe('UC201 Create movie', () => {
+  describe('UC-xyz [usecase beschrijving]', () => {
     //
     beforeEach((done) => {
       logger.debug('beforeEach called');
@@ -72,17 +75,17 @@ describe('Users API', () => {
               done(error);
               throw error; // not connected!
             }
-            // Let op dat je done() pas aanroept als de query callback eindigt!
             logger.debug('beforeEach done');
             // When done with the connection, release it.
             dbconnection.releaseConnection(connection);
+            // Let op dat je done() pas aanroept als de query callback eindigt!
             done();
           }
         );
       });
     });
 
-    it.skip('TC-201-1 should return valid error when required value is not present', (done) => {
+    it.skip('TC-201-1 Voorbeeld testcase, met POST, wordt nu geskipped', (done) => {
       chai
         .request(server)
         .post('/api/movie')
