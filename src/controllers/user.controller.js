@@ -17,8 +17,11 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        console.log('error', err);
-        next('error: ' + err.message);
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
       }
       if (conn) {
         conn.query(sqlStatement, function (err, results, fields) {
