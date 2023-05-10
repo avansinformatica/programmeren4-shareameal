@@ -1,6 +1,4 @@
-process.env.DB_DATABASE =
-  process.env.DB_DATABASE || 'shareameal-testdb' || 'shareameal';
-require('tracer').setLevel('debug');
+process.env['DB_DATABASE'] = process.env.DB_DATABASE || 'shareameal-testdb';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -11,6 +9,7 @@ const logger = require('../../src/util/utils').logger;
 const dbconnection = require('../../src/util/mysql-db');
 // const jwt = require('jsonwebtoken')
 // const { jwtSecretKey, logger } = require('../../src/config/config')
+require('tracer').setLevel('debug');
 
 chai.should();
 chai.use(chaiHttp);
