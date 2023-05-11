@@ -17,17 +17,17 @@ const pool = mysql.createPool({
 });
 
 pool.on('connection', function (connection) {
-  logger.debug(
+  logger.info(
     `Connected to db '${connection.config.database}' on ${connection.config.host}`
   );
 });
 
 pool.on('acquire', function (connection) {
-  logger.debug('Connection %d acquired', connection.threadId);
+  logger.trace('Connection %d acquired', connection.threadId);
 });
 
 pool.on('release', function (connection) {
-  logger.debug('Connection %d released', connection.threadId);
+  logger.trace('Connection %d released', connection.threadId);
 });
 
 module.exports = pool;

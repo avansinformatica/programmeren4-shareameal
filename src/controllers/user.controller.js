@@ -2,6 +2,7 @@ const database = require('../util/inmem-db');
 const logger = require('../util/utils').logger;
 const assert = require('assert');
 const pool = require('../util/mysql-db');
+const jwt = require('jsonwebtoken');
 
 const userController = {
   getAllUsers: (req, res, next) => {
@@ -35,7 +36,7 @@ const userController = {
           if (results) {
             logger.info('Found', results.length, 'results');
             res.status(200).json({
-              statusCode: 200,
+              code: 200,
               message: 'User getAll endpoint',
               data: results
             });
@@ -46,13 +47,50 @@ const userController = {
     });
   },
 
-  createUser: (req, res) => {
+  getUserProfile: (req, res, next) => {
+    req.userId = 1;
+    logger.trace('Get user profile for user', req.userId);
+
+    let sqlStatement = 'SELECT * FROM `user` WHERE id=?';
+
+    pool.getConnection(function (err, conn) {
+      // Do something with the connection
+      if (err) {
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
+      }
+      if (conn) {
+        conn.query(sqlStatement, [req.userId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              code: 409,
+              message: err.message
+            });
+          }
+          if (results) {
+            logger.trace('Found', results.length, 'results');
+            res.status(200).json({
+              code: 200,
+              message: 'Get User profile',
+              data: results[0]
+            });
+          }
+        });
+        pool.releaseConnection(conn);
+      }
+    });
+  },
+
+  createUser: (req, res, next) => {
     logger.info('Register user');
 
     // De usergegevens zijn meegestuurd in de request body.
-    // In de komende lessen gaan we testen of dat werkelijk zo is.
     const user = req.body;
-    logger.debug('user = ', user);
+    logger.trace('user = ', user);
 
     // Hier zie je hoe je binnenkomende user info kunt valideren.
     try {
@@ -65,30 +103,63 @@ const userController = {
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
-      res.status(400).json({
-        status: 400,
+      next({
+        code: 400,
         message: err.message.toString(),
-        data: {}
+        data: undefined
       });
+
       // Nodejs is asynchroon. We willen niet dat de applicatie verder gaat
       // wanneer er al een response is teruggestuurd.
       return;
     }
 
-    // Zorg dat de id van de nieuwe user toegevoegd wordt
-    // en hoog deze op voor de volgende insert.
-    user.id = database.index++;
-    // User toevoegen aan database
-    database['users'].push(user);
-    logger.info('New user added to database');
+    /**
+     * Query the database to see if the email of the user to be registered already exists.
+     */
+    pool.getConnection((err, connection) => {
+      if (err) {
+        next({
+          code: 500,
+          message: err.message.toString(),
+          data: undefined
+        });
+      }
+      if (connection) {
+        let { firstName, lastName, emailAdress, password, city, street } =
+          req.body;
 
-    // Stuur het response terug
-    res.status(200).json({
-      status: 200,
-      message: `User met id ${user.id} is toegevoegd`,
-      // Wat je hier retourneert is een keuze; misschien wordt daar in het
-      // ontwerpdocument iets over gezegd.
-      data: user
+        connection.query(
+          'INSERT INTO `user` (`firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) ' +
+            'VALUES (?, ?, ?, ?, ?, ?)',
+          [firstName, lastName, emailAdress, password, street, city],
+          (err, rows, fields) => {
+            connection.release();
+            if (err) {
+              // When the INSERT fails, we assume the user already exists
+              logger.error(err.toString());
+              next({
+                code: 400,
+                message: 'This email has already been taken.',
+                data: undefined
+              });
+            } else {
+              logger.trace(rows);
+              // Userinfo returned to the caller.
+              const userinfo = {
+                id: rows.insertId,
+                ...req.body
+              };
+              logger.debug('Registered', userinfo);
+              res.status(200).json({
+                code: 200,
+                message: 'User registered.',
+                data: userinfo
+              });
+            }
+          }
+        );
+      }
     });
   },
 

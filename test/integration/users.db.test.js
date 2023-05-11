@@ -4,12 +4,10 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../../index');
 const assert = require('assert');
-const logger = require('../../src/util/utils').logger;
-// require('dotenv').config()
 const dbconnection = require('../../src/util/mysql-db');
-// const jwt = require('jsonwebtoken')
-// const { jwtSecretKey, logger } = require('../../src/config/config')
-require('tracer').setLevel('debug');
+const jwt = require('jsonwebtoken');
+const { jwtSecretKey, logger } = require('../../src/util/utils');
+require('tracer').setLevel('trace');
 
 chai.should();
 chai.use(chaiHttp);
@@ -49,17 +47,17 @@ describe('Users API', () => {
   // https://mochajs.org/#hooks
   //
   before((done) => {
-    logger.debug(
+    logger.trace(
       'before: hier zorg je eventueel dat de precondities correct zijn'
     );
-    logger.debug('before done');
+    logger.trace('before done');
     done();
   });
 
   describe('UC-xyz [usecase beschrijving]', () => {
     //
     beforeEach((done) => {
-      logger.debug('beforeEach called');
+      logger.trace('beforeEach called');
       // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
       dbconnection.getConnection(function (err, connection) {
         if (err) {
@@ -74,7 +72,7 @@ describe('Users API', () => {
               done(error);
               throw error; // not connected!
             }
-            logger.debug('beforeEach done');
+            logger.trace('beforeEach done');
             // When done with the connection, release it.
             dbconnection.releaseConnection(connection);
             // Let op dat je done() pas aanroept als de query callback eindigt!
@@ -98,10 +96,8 @@ describe('Users API', () => {
           res.should.have.status(401);
           res.should.be.an('object');
 
-          res.body.should.be
-            .an('object')
-            .that.has.all.keys('statusCode', 'message');
-          statusCode.should.be.an('number');
+          res.body.should.be.an('object').that.has.all.keys('code', 'message');
+          code.should.be.an('number');
           message.should.be.a('string').that.contains('error');
           done();
         });
@@ -113,6 +109,82 @@ describe('Users API', () => {
     });
 
     // En hier komen meer testcases
+  });
+
+  describe('UC-203 Opvragen van gebruikersprofiel', () => {
+    //
+    beforeEach((done) => {
+      logger.trace('beforeEach called');
+      // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
+      dbconnection.getConnection(function (err, connection) {
+        if (err) {
+          done(err);
+          throw err; // no connection
+        }
+        // Use the connection
+        connection.query(
+          CLEAR_DB + INSERT_USER,
+          function (error, results, fields) {
+            if (error) {
+              done(error);
+              throw error; // not connected!
+            }
+            logger.trace('beforeEach done');
+            // When done with the connection, release it.
+            dbconnection.releaseConnection(connection);
+            // Let op dat je done() pas aanroept als de query callback eindigt!
+            done();
+          }
+        );
+      });
+    });
+
+    it.skip('TC-203-1 Ongeldig token', (done) => {
+      chai
+        .request(server)
+        .get('/api/user/profile')
+        .set('authorization', 'Bearer hier-staat-een-ongeldig-token')
+        .end((err, res) => {
+          assert.ifError(err);
+          res.should.have.status(401);
+          res.should.be.an('object');
+
+          res.body.should.be
+            .an('object')
+            .that.has.all.keys('code', 'message', 'data');
+          let { code, message, data } = res.body;
+          code.should.be.an('number');
+          message.should.be.a('string').equal('Not authorized');
+          done();
+        });
+    });
+
+    it('TC-203-2 Gebruiker ingelogd met geldig token', (done) => {
+      // Gebruiker met id = 1 is toegevoegd in de testdatabase. We zouden nu
+      // in deze testcase succesvol het profiel van die gebruiker moeten vinden
+      // als we een valide token meesturen.
+      chai
+        .request(server)
+        .get('/api/user/profile')
+        .set('authorization', 'Bearer ' + jwt.sign({ userId: 1 }, jwtSecretKey))
+        .end((err, res) => {
+          assert.ifError(err);
+          res.should.have.status(200);
+          res.should.be.an('object');
+
+          res.body.should.be
+            .an('object')
+            .that.has.all.keys('code', 'message', 'data');
+          let { code, message, data } = res.body;
+          code.should.be.an('number');
+          message.should.be.a('string').that.contains('Get User profile');
+          data.should.be.an('object');
+          data.id.should.equal(1);
+          data.firstName.should.equal('first');
+          // Zelf de overige validaties aanvullen!
+          done();
+        });
+    });
   });
 
   describe('UC-303 Lijst van maaltijden opvragen', () => {
@@ -157,10 +229,10 @@ describe('Users API', () => {
 
           res.body.should.be
             .an('object')
-            .that.has.all.keys('message', 'data', 'statusCode');
+            .that.has.all.keys('message', 'data', 'code');
 
-          const { statusCode, data } = res.body;
-          statusCode.should.be.an('number');
+          const { code, data } = res.body;
+          code.should.be.an('number');
           data.should.be.an('array').that.has.length(2);
           data[0].name.should.equal('Meal A');
           data[0].id.should.equal(1);
