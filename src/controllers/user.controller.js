@@ -115,52 +115,9 @@ const userController = {
     }
 
     /**
-     * Query the database to see if the email of the user to be registered already exists.
+     * De rest van deze functie maak je zelf af!
+     * Voor tips, zie de PDF van de les over authenticatie.
      */
-    pool.getConnection((err, connection) => {
-      if (err) {
-        next({
-          code: 500,
-          message: err.message.toString(),
-          data: undefined
-        });
-      }
-      if (connection) {
-        let { firstName, lastName, emailAdress, password, city, street } =
-          req.body;
-
-        connection.query(
-          'INSERT INTO `user` (`firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) ' +
-            'VALUES (?, ?, ?, ?, ?, ?)',
-          [firstName, lastName, emailAdress, password, street, city],
-          (err, rows, fields) => {
-            connection.release();
-            if (err) {
-              // When the INSERT fails, we assume the user already exists
-              logger.error(err.toString());
-              next({
-                code: 400,
-                message: 'This email has already been taken.',
-                data: undefined
-              });
-            } else {
-              logger.trace(rows);
-              // Userinfo returned to the caller.
-              const userinfo = {
-                id: rows.insertId,
-                ...req.body
-              };
-              logger.debug('Registered', userinfo);
-              res.status(200).json({
-                code: 200,
-                message: 'User registered.',
-                data: userinfo
-              });
-            }
-          }
-        );
-      }
-    });
   },
 
   deleteUser: (req, res) => {}
