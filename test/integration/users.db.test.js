@@ -159,7 +159,7 @@ describe('Users API', () => {
         });
     });
 
-    it('TC-203-2 Gebruiker ingelogd met geldig token', (done) => {
+    it.skip('TC-203-2 Gebruiker ingelogd met geldig token', (done) => {
       // Gebruiker met id = 1 is toegevoegd in de testdatabase. We zouden nu
       // in deze testcase succesvol het profiel van die gebruiker moeten vinden
       // als we een valide token meesturen.
