@@ -7,6 +7,10 @@ const pool = require('../util/mysql-db');
 const { logger, jwtSecretKey } = require('../util/utils');
 
 module.exports = {
+  /**
+   * login
+   * Retourneer een geldig token indien succesvol
+   */
   login(req, res, next) {
     pool.getConnection((err, connection) => {
       if (err) {
@@ -17,73 +21,29 @@ module.exports = {
         });
       }
       if (connection) {
-        // 1. Kijk of deze useraccount bestaat.
-        connection.query(
-          'SELECT `id`, `emailAdress`, `password`, `firstName`, `lastName` FROM `user` WHERE `emailAdress` = ?',
-          [req.body.emailAdress],
-          (err, rows, fields) => {
-            connection.release();
-            if (err) {
-              logger.error('Error: ', err.toString());
-              next({
-                code: 500,
-                message: err.code
-              });
-            }
-            if (rows) {
-              // 2. Er was een resultaat, check het password.
-              if (
-                rows &&
-                rows.length === 1 &&
-                rows[0].password == req.body.password
-              ) {
-                logger.info(
-                  'passwords DID match, sending userinfo and valid token'
-                );
-                // Extract the password from the userdata - we do not send that in the response.
-                const { password, ...userinfo } = rows[0];
-                // Create an object containing the data we want in the payload.
-                const payload = {
-                  userId: userinfo.id
-                };
-
-                jwt.sign(
-                  payload,
-                  jwtSecretKey,
-                  { expiresIn: '2d' },
-                  (err, token) => {
-                    logger.debug('User logged in, sending: ', userinfo);
-                    res.status(200).json({
-                      code: 200,
-                      message: 'User logged in',
-                      data: { ...userinfo, token }
-                    });
-                  }
-                );
-              } else {
-                logger.info('User not found or password invalid');
-                next({
-                  code: 404,
-                  message: 'User not found or password invalid',
-                  data: {}
-                });
-              }
-            }
-          }
-        );
+        /**
+         * ToDo:
+         * 1. SQL Select, zie of deze user id in de database bestaat.
+         *    - Niet gevonden, dan melding Not Authorized
+         * 2. Als user gevonden, check dan het password
+         *    - Geen match, dan melding Not Authorized
+         * 3. Maak de payload en stop de userId daar in
+         * 4. Genereer het token en stuur deze terug in de response
+         */
       }
     });
   },
 
-  //
-  //
-  //
+  /**
+   * Validatie functie voor /api/login,
+   * valideert of de vereiste body aanwezig is.
+   */
   validateLogin(req, res, next) {
     // Verify that we receive the expected input
     try {
       assert(
         typeof req.body.emailAdress === 'string',
-        'email must be a string.'
+        'emailAdress must be a string.'
       );
       assert(
         typeof req.body.password === 'string',
@@ -113,7 +73,12 @@ module.exports = {
         data: undefined
       });
     } else {
-      // Hier moet je nog
+      /**
+       * We hebben de headers. Lees het token daaruit, valideer het token
+       * en lees de payload daaruit. De userId uit de payload stop je in de req,
+       * en ga naar de volgende endpoint.
+       * Zie de Ppt van de les over authenticatie voor tips en tricks.
+       */
     }
   }
 };
